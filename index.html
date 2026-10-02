@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Server management plans – comparison</title>
+<style>
+:root{
+  --bg:#ffffff; --fg:#1f1b2e; --muted:#6b667a; --line:#e6e2ef; --row:#faf8fd;
+  --acc:#7300e6; --acc-soft:#f1e8fc; --acc-fg:#ffffff; --no:#b9b4c6;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#15121d; --fg:#ece8f4; --muted:#a39dba; --line:#2b2638; --row:#1b1726;
+    --acc:#a86bff; --acc-soft:#2a1f45; --acc-fg:#15121d; --no:#4d4760;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15121d; --fg:#ece8f4; --muted:#a39dba; --line:#2b2638; --row:#1b1726;
+  --acc:#a86bff; --acc-soft:#2a1f45; --acc-fg:#15121d; --no:#4d4760;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 Arial,Helvetica,sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:32px 20px 64px}
+h1{font-size:2rem;line-height:1.2;margin:0 0 8px}
+h2{font-size:1.35rem;margin:40px 0 12px}
+p.lead{color:var(--muted);margin:0 0 24px;max-width:70ch}
+.note{color:var(--muted);font-size:.9rem;margin:10px 0 0;max-width:80ch}
+
+.cardcell{padding:0 6px 0;position:static;background:var(--bg);border-bottom:none;text-align:center}
+.plan{padding:16px 10px;border-bottom:3px solid var(--line);text-align:center}
+.plan.featured{border-bottom-color:var(--acc)}
+.plan .name{font-weight:700;font-size:1.1rem}
+.plan .price{font-size:1.5rem;font-weight:700;color:var(--acc);margin-top:4px}
+.plan .per{color:var(--muted);font-size:.85rem}
+.noheader td.v{text-align:center}
+.noheader td.label{width:40%}
+.noheader th.cardcell:not(:first-child),.noheader td.v{width:20%}
+.noheader{table-layout:fixed}
+.noheader .lbl>div{display:block}
+.noheader .lbl .s{display:block;margin-top:2px}
+.noheader .lbl .s::before{content:none}
+
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:760px}
+.panel table{min-width:900px}
+th,td{padding:12px 14px;text-align:left;vertical-align:middle;border-bottom:1px solid var(--line)}
+th{font-weight:700;background:var(--bg);position:sticky;top:0;z-index:1}
+tbody tr:nth-child(even){background:var(--row)}
+td.label{width:34%}
+.panel td.label{width:58%}
+td.v{font-size:1rem;text-align:center;line-height:1}
+th:not(:first-child){text-align:center}
+td.v .dash{color:var(--no)}
+td.v .ok{color:var(--acc);font-weight:700}
+.lbl{display:flex;gap:8px;align-items:center}
+.panel .lbl{font-size:.84rem;line-height:1.25;white-space:nowrap}
+.panel th,.panel td{padding:5px 12px}
+.lbl .t{font-weight:600}
+.lbl .s{color:var(--muted);font-size:.85rem;font-weight:400}
+.panel .lbl .s{font-size:.74rem}
+.lbl .s::before{content:' – '}
+.info{flex:0 0 auto;width:18px;height:18px;padding:0;border-radius:50%;border:1.5px solid var(--acc);color:var(--acc);
+  background:transparent;font:700 11px/1 Georgia,'Times New Roman',serif;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:1;vertical-align:middle;position:relative;top:-1px}
+.info:hover,.info:focus-visible{background:var(--acc);color:var(--acc-fg);outline:none}
+.info:focus-visible{box-shadow:0 0 0 3px var(--acc-soft)}
+
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 4px}
+.tab{border:1px solid var(--line);background:var(--bg);color:var(--fg);padding:10px 18px;border-radius:999px;cursor:pointer;font:600 .95rem Arial,sans-serif}
+.tab[aria-selected="true"]{background:var(--acc);border-color:var(--acc);color:var(--acc-fg)}
+.tab:focus-visible{outline:3px solid var(--acc-soft)}
+.panel[hidden]{display:none}
+.panel .sub{color:var(--muted);font-size:.9rem;margin:8px 0 12px}
+
+dialog{border:none;border-radius:10px;padding:0;max-width:680px;width:calc(100% - 32px);background:var(--bg);color:var(--fg);box-shadow:0 20px 60px rgba(0,0,0,.25)}
+dialog::backdrop{background:rgba(20,10,40,.55)}
+.dlg{padding:24px 26px 26px}
+.dlg h3{margin:0 32px 6px 0;font-size:1.2rem}
+.dlg p{margin:0 0 14px;color:var(--muted)}
+.dlg .tiers{display:grid;gap:10px}
+.dlg .tier{display:grid;grid-template-columns:100px 1fr;gap:12px;padding:10px 12px;background:var(--row);border-radius:6px;font-size:.95rem}
+.dlg .tier b{color:var(--acc)}
+.dlg .tier.off{opacity:.55}
+.close{position:absolute;top:12px;right:12px;width:36px;height:36px;border:none;background:transparent;color:var(--muted);font-size:22px;cursor:pointer;border-radius:50%}
+.close:hover,.close:focus-visible{background:var(--acc-soft);color:var(--fg);outline:none}
+
+@media (max-width:700px){
+  .plan{padding:10px 6px}
+  .plan .price{font-size:1.1rem}
+  .plan .name{font-size:.9rem}
+  h1{font-size:1.5rem}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Server management plans</h1>
+  <p class="lead">Work is done on request through a ticket, within the hours included in your plan. Monitoring runs without a request: when a check fires, you receive an alert and the next step is agreed with you. Click the <span style="color:var(--acc);font-weight:700">i</span> next to any row to see exactly what is included.</p>
+
+
+  <div class="scroll"><table id="t-params" class="noheader"></table></div>
+  <p class="note">Included hours are engineer time for any task in the table below. They are spent on tasks you request in a ticket or approve after a monitoring alert. Monitoring itself does not use hours. Work beyond the included hours, including tasks from a higher plan, is €30/hour and is estimated and agreed before it starts.</p>
+
+  <h2>What each plan covers</h2>
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" aria-selected="true" data-os="linux">Linux</button>
+    <button class="tab" role="tab" aria-selected="false" data-os="pve">Proxmox VE</button>
+    <button class="tab" role="tab" aria-selected="false" data-os="win">Windows Server</button>
+  </div>
+  <div class="panel" data-os="linux"><p class="sub">Per server. Guest operating systems on your hypervisor need a separate plan per VM.</p><div class="scroll"><table id="t-linux"></table></div></div>
+  <div class="panel" data-os="pve" hidden><p class="sub">Per node. Guest operating systems need a separate plan per VM.</p><div class="scroll"><table id="t-pve"></table></div></div>
+  <div class="panel" data-os="win" hidden><p class="sub">Per server. Hyper-V guest operating systems need a separate plan per VM.</p><div class="scroll"><table id="t-win"></table></div></div>
+  <p class="note">Reboot, rescue mode, standard OS reinstall, hardware replacement and root or Administrator password reset are standard support, included with every server, and do not use plan hours.</p>
+</div>
+
+<dialog id="dlg"><div class="dlg">
+  <button class="close" id="dlg-close" aria-label="Close">×</button>
+  <h3 id="dlg-title"></h3>
+  <p id="dlg-desc"></p>
+  <div class="tiers" id="dlg-tiers"></div>
+</div></dialog>
+
+<script>
+const T=['Starter','Advanced','Premium'];
+const PARAMS=[
+ ['Included engineer hours','per month',['2 h','4 h','5 h']],
+ ['Response time','to the first reply on a request',['40 min','25 min','15 min']],
+ ['Work beyond included hours','',['€30/h','€30/h','€30/h']],
+ ['Time increment','',['15 min','15 min','15 min']],
+ ['Maintenance window','CE(S)T',['Weekdays 8:00–18:00','Weekdays 8:00–23:00, nights by arrangement','Weekdays 8:00–23:00, nights and weekends by arrangement']],
+];
+
+// row: [title, subtitle, [starter, advanced, premium], detail, [starterDetail, advancedDetail, premiumDetail]]
+const ALLOS=[
+ ['Hardware monitoring','disks, RAID, CPU, memory, network',['Disks and RAID, hourly','Plus CPU, memory, network, every 30 min','Everything every 5 min, disk space forecasting'],
+  'An agent on the server collects health data and sends it to our monitoring system. Disks are checked by SMART status: reallocated and pending sectors, temperature, overall health. RAID covers both hardware controllers and software arrays (mdadm, ZFS, Storage Spaces): array state, degraded or missing members, rebuild progress. Free space is tracked on every volume. When a threshold is crossed you receive an alert; the fix is agreed with you. Monitoring runs around the clock and does not use plan hours.',
+  ['Disk health (SMART), RAID array state (hardware and software), free space on volumes. Polled every hour.',
+   'Starter checks plus CPU load, memory and swap usage, network throughput and errors. Alerts on critical values and abnormal patterns, for example a sustained load spike or a sudden drop in traffic. Polled every 30 minutes.',
+   'All checks polled every 5 minutes. Adds disk space forecasting based on growth trend: you are warned before a volume fills up, not after.']],
+ ['Service monitoring','HTTP/HTTPS, SSL certificates, TCP ports',['Every 20 min','Every 10 min','Every 5 min'],
+  'External checks from our monitoring service, without access to the inside of the server. HTTP and HTTPS endpoints: expected status code and, optionally, a keyword that must appear in the response. SSL certificates: expiry date, with alerts 14 and 7 days ahead. TCP ports: the port accepts a connection, for example SSH, RDP, a control panel or an application port. The list of endpoints is agreed with you and can be changed at any time. The checked ports must stay open for our monitoring service.',
+  ['Agreed set of endpoints checked every 20 minutes.','Agreed set of endpoints checked every 10 minutes.','Agreed set of endpoints checked every 5 minutes.']],
+ ['Update control','pending OS and security updates',['Notification, installation in agreed window','Notification, installation in agreed window','Notification, installation in agreed window'],
+  'A lightweight agent reports pending OS and security updates to our patch management system. It connects outbound only, so no inbound ports are opened on your server. You are notified as updates are released, with security fixes flagged separately. Installation is scheduled in a maintenance window agreed with you: a dry run first to see what will change, then the update, a reboot if required, and confirmation of the result in the ticket. Covers apt, dnf and yum based Linux distributions, Proxmox VE host and LXC packages, and Windows Server updates.',
+  ['Notifications and installation in an agreed window.','Notifications and installation in an agreed window.','Notifications and installation in an agreed window.']],
+ ['Incident diagnosis and resolution','failed services, load, disk, network',['On your request','Alert with recommended fix, on approval','Alert with recommended fix, on approval; nights and weekends by arrangement'],
+  'Finding the cause of an incident and restoring operation: a service that stopped, a load spike, a full disk, a network issue, a VM or container that failed. Alerts are sent on every plan. Nothing inside your server is changed without your confirmation. Issues on our side – network, power, hardware – are our responsibility and are fixed without waiting for you. Time spent counts against plan hours.',
+  ['You receive the alert and decide what to do next. Open a ticket and engineers diagnose the issue and restore operation.','The alert comes with a recommended fix from an engineer. Once you approve, we carry it out.','Same as Advanced. Night and weekend work available by arrangement.']],
+ ['Custom OS installation','disk layout, software RAID, custom image',['✓','✓','✓'],
+  'Reinstallation with a non-standard disk layout, software RAID, LVM, a specific image or edition. Standard reinstall from the client area is free and does not use hours; this row covers everything the standard installer cannot do.',
+  ['Included.','Included.','Included.']],
+ ['User accounts and access','users, keys, sudo or RDP',['✓','✓','✓'],
+  'Creating and removing users and groups, issuing SSH keys, configuring sudo rights; on Windows, RDP access and Network Level Authentication.',['Included.','Included.','Included.']],
+ ['Firewall and VPN','firewall rules, brute-force protection, VPN',['✓','✓','✓'],
+  'Firewall rules on the server, fail2ban or RDP restrictions against brute force, installation and configuration of WireGuard or OpenVPN for remote access.',['Included.','Included.','Included.']],
+ ['INTROSERV Backup: setup and full restore','NAKIVO, with add-on',['✓','✓','✓'],
+  'Configuration of INTROSERV Backup Service: schedule, retention, first backup verified. Full server restore from it when needed. Requires the Backup Service add-on; the add-on itself is billed separately.',
+  ['Included.','Included.','Included.']],
+];
+
+const SEC=[
+ ['Security monitoring','CVE scanning, file integrity, login attempts',['–','CVE scanning, file integrity, brute-force detection','Plus rootkit detection and automatic IP blocking'],
+  'An agent on the server checks installed packages against vendor CVE databases (Canonical, Debian, Red Hat, Microsoft, NVD) and reports known vulnerabilities with their severity. File integrity monitoring watches system binaries and configuration files for unauthorized changes. Authentication logs are analyzed for failed logins, brute-force attempts on SSH and RDP, new accounts and privilege changes. Findings come to you as a report with a proposed fix.',
+  ['Not included.','Vulnerability scanning, file integrity monitoring, detection of failed logins, brute-force attempts, new accounts and privilege changes.','Advanced checks plus rootkit and hidden process detection, and automatic blocking of IP addresses that attack the server.']],
+ ['Vulnerability remediation','based on security monitoring reports',['–','Critical and high','All severity levels'],
+  'Fixing what security monitoring found: updating the affected package, changing the configuration, closing the attack vector. Each fix is proposed to you and carried out after approval. Applies to the OS and the software we installed; application code is not covered.',
+  ['Not included.','Critical and high severity findings.','All severity levels.']],
+ ['Actions on monitoring results','free disk space, restart services, fix load cause',['–','✓','✓'],
+  'Routine actions triggered by a monitoring alert, after your confirmation: clearing logs and temporary files to free disk space, restarting a failed service, finding and removing the process that causes a load spike.',
+  ['Not included; open a ticket to request the work.','Included within plan hours.','Included within plan hours.']],
+ ['Incident report','root cause analysis',['–','Cause explained in the ticket','Written report within 24 hours'],
+  'After an incident is resolved: what caused it, what was done, and what prevents a repeat.',
+  ['Not included.','A short explanation of the cause in the incident ticket.','A written root cause analysis within 24 hours of resolution.']],
+];
+const PREM=[
+ ['Monthly server health summary','',['–','–','✓'],
+  'A monthly report based on monitoring data: pending updates, open vulnerabilities, disk health and free space trend, backup status, and recommendations for the coming month.',
+  ['Not included.','Not included.','Included.']],
+ ['Architecture consulting and documentation','sizing, server passport',['–','–','✓'],
+  'Consultations on sizing and configuration changes, and a server passport: documented configuration, installed services, access points and recovery procedures, updated after each significant change.',
+  ['Not included.','Not included.','Included within plan hours.']],
+];
+
+const LINUX=[
+ ['Web server','Nginx, Apache, PHP-FPM, Node.js',['Install, updates, virtual hosts','Plus reverse proxy','Plus tuning'],
+  'Installation, updates and configuration of the web stack from distribution or vendor repositories. Website code and application deployment are not included.',
+  ['Installation, updates, virtual hosts.','Plus reverse proxy configuration.','Plus performance tuning: worker and connection limits, caching, PHP-FPM pools.']],
+ ['Databases','MySQL/MariaDB, PostgreSQL, Redis',['Install, updates, users, dumps','Plus basic configuration','Plus load tuning'],
+  'Installation, updates and administration of the database server: users and privileges, dumps and restore from dumps. Queries, schema and application data are not included.',
+  ['Installation, updates, users, dumps.','Plus basic configuration: memory limits, connections, logging.','Plus tuning for your load based on actual usage.']],
+ ['Control panels','cPanel, Plesk, DirectAdmin, ISPmanager',['Install, updates','Install, updates, configuration','Install, updates, configuration'],
+  'Installation and updates of the control panel. Panel licenses are purchased by the client.',
+  ['Installation and updates.','Plus initial configuration: domains, mail, DNS, PHP versions.','Plus initial configuration: domains, mail, DNS, PHP versions.']],
+ ['Self-hosted applications in Docker','official images: Nextcloud, GitLab, Grafana, Portainer',['Install','Install, updates','Install, updates, SSO/S3/SMTP integrations'],
+  'Deployment of applications from official vendor images only, without modifications. Persistent volumes, reverse proxy and TLS are set up with the application. Configuration inside the application beyond initial setup is not included.',
+  ['Installation.','Installation and updates to a newer image version.','Plus integrations with SSO, S3 storage and SMTP.']],
+ ['SSL certificates',"Let's Encrypt",['✓','✓','✓'],
+  "Issuing Let's Encrypt certificates, installing them in the web server or control panel, configuring automatic renewal.",['Included.','Included.','Included.']],
+ ['Storage and file services','LVM, mdadm RAID, NFS/SMB/S3 mounts, SFTP',['✓','✓','✓'],
+  'LVM volumes, software RAID, mounting NFS, SMB or S3 storage, SFTP access.',['Included.','Included.','Included.']],
+ ['restic, Borg, PBS: setup and restore','if configured by us',['–','✓','✓'],
+  'Setup of restic, Borg or Proxmox Backup Server client on your server: repository, schedule, retention. Full restore from these backups, provided we configured them.',
+  ['Not included.','Included.','Included.']],
+ ['Malware scan and removal','ClamAV, Maldet, rkhunter',['–','Scan, report','Scan, cleanup'],
+  'Scanning the server with ClamAV, Maldet and rkhunter and reviewing logs for signs of compromise.',
+  ['Not included.','Scan and a report of findings.','Scan, removal of what was found and closing the entry point.']],
+ ['Security hardening','configuration checklist',['–','Basic checklist','Extended checklist, report'],
+  'Review of the OS configuration against a hardening checklist: SSH settings, password policy, unused services, file permissions, kernel parameters. Findings are corrected after your approval. Application code is not reviewed.',
+  ['Not included.','Basic checklist.','Extended checklist with a written report.']],
+ ['Restore of individual files and folders','from supported backups',['–','–','✓'],
+  'Restoring selected files or folders from INTROSERV Backup, restic, Borg or PBS where the tool supports it, instead of a full server restore.',
+  ['Not included.','Not included.','Included.']],
+ ['Test restore','verify that backups work',['–','–','✓'],
+  'A test restore from a backup on request, to confirm the backup is usable and not only present.',['Not included.','Not included.','Included.']],
+ ['Major OS version upgrade','release upgrade with rollback plan',['–','–','✓'],
+  'Upgrade to the next major release of the distribution: pre-check, backup, rollback plan, upgrade in the agreed window, verification afterwards.',
+  ['Not included.','Not included.','Included.']],
+];
+
+const PVE=[
+ ['Host network','bridge, NAT, extra IPs, VLAN, bonding',['Bridge, NAT, extra IPs','Plus VLAN, bonding','Plus VLAN, bonding, routing'],
+  'Network configuration on the hypervisor host for VMs and containers.',
+  ['Bridges, NAT, additional IP addresses.','Plus VLAN and bonding.','Plus VLAN, bonding and routing.']],
+ ['Storage','ZFS, LVM-thin, directories, NFS, SMB, iSCSI',['ZFS, LVM-thin, directories','Plus NFS, SMB','Plus iSCSI multipath'],
+  'Storage configuration on the host for VM disks, ISO images and backups.',
+  ['ZFS pools, LVM-thin, directory storage.','Plus NFS and SMB network storage.','Plus iSCSI with multipath.']],
+ ['VMs and containers','create, templates, cloning, cloud-init',['✓','✓','✓'],
+  'Creating VMs and LXC containers, templates, cloning, cloud-init configuration. Software inside the guest is not included.',['Included.','Included.','Included.']],
+ ['VM resources','CPU, RAM, disks, PCI/USB/GPU passthrough',['CPU, RAM, disks, USB','Plus PCI and GPU passthrough','Plus PCI and GPU passthrough'],
+  'Changing CPU, memory and disk allocation, resizing disks, device passthrough to VMs.',
+  ['CPU, memory and disk allocation, disk resizing, USB passthrough.','Starter scope plus PCI and GPU passthrough: IOMMU setup, device isolation, VM configuration.','Starter scope plus PCI and GPU passthrough: IOMMU setup, device isolation, VM configuration.']],
+ ['Snapshots','create, roll back, delete',['✓','✓','✓'],'Snapshot management for VMs and containers.',['Included.','Included.','Included.']],
+ ['Proxmox VE firewall','datacenter, node, VM rules',['✓','✓','✓'],'Firewall rules at datacenter, node and VM level.',['Included.','Included.','Included.']],
+ ['VM import','from supported hypervisors and images',['–','✓','✓'],
+  'Importing VMs from disk images and from hypervisors supported by the Proxmox VE import tools: disk conversion, VM configuration, first boot check.',['Not included.','Included.','Included.']],
+ ['Proxmox VE monitoring','ZFS, VM and LXC status, backup jobs',['–','ZFS pools','ZFS, VM and LXC status, backup jobs'],
+  'Hypervisor-specific checks in addition to hardware monitoring: ZFS pool health and scrub results, VM and container status, results of backup jobs.',
+  ['Not included.','ZFS pool health.','ZFS pool health, VM and LXC status, backup job results.']],
+ ['ACME certificates','',['–','✓','✓'],'Issuing and renewing certificates for the Proxmox VE web interface via ACME.',['Not included.','Included.','Included.']],
+ ['Proxmox backup setup','vzdump, Proxmox Backup Server',['–','vzdump, schedule','vzdump, PBS, verify, prune'],
+  'Configuration of built-in Proxmox backup tools for VMs and containers.',
+  ['Not included.','vzdump jobs and schedule.','vzdump and PBS jobs, verification and prune schedules.']],
+ ['Restore from vzdump / PBS','',['–','Whole VM','Whole VM, individual files'],
+  'Restoring VMs and containers from Proxmox backups, provided we configured them.',
+  ['Not included.','Restore of a whole VM or container.','Restore of a whole VM or container, or individual files from it.']],
+ ['Test restore','verify that backups work',['–','–','✓'],
+  'A test restore of a VM from backup on request, to confirm the backup is usable.',['Not included.','Not included.','Included.']],
+ ['Major Proxmox VE version upgrade','',['–','–','✓'],'Upgrade between major Proxmox VE versions: pre-check, backup, rollback plan, upgrade in the agreed window.',['Not included.','Not included.','Included.']],
+ ['Proxmox Backup Server deployment','on a separate server',['–','–','✓'],
+  'Deployment of PBS on a separate server: datastore, sync jobs and connection to the node.',['Not included.','Not included.','Included.']],
+];
+
+const WIN=[
+ ['Server roles and IIS','file server, DNS, DHCP, IIS',['Roles, IIS sites','Plus configuration, certificates','Plus IIS tuning'],
+  'Installation and configuration of Windows Server roles and IIS. Website code and applications are not included.',
+  ['Role installation, IIS sites.','Plus role configuration and certificates.','Plus IIS tuning: application pools, limits, compression, caching.']],
+ ['Antivirus','Microsoft Defender, third-party AV',['Defender, exclusions','Plus third-party antivirus','Plus report'],
+  'Antivirus configuration on the server. Licenses for third-party antivirus are purchased by the client.',
+  ['Microsoft Defender setup with exclusions for your applications and data paths.','Starter scope plus installation and configuration of a third-party antivirus of your choice.','Advanced scope plus a report: detections and their handling, signature and last scan status, current exclusions and why they exist, recommendations.']],
+ ['Active Directory','domain controller, OU, GPO',['One controller, OU','One controller, basic GPO','Up to 2 controllers, replication, GPO'],
+  'Deployment of Active Directory Domain Services.',
+  ['One domain controller, organizational units.','One domain controller, basic group policies.','Up to two controllers with replication and group policies.']],
+ ['Hyper-V','role, switches, VMs, checkpoints, export',['✓','✓','✓'],'Hyper-V role, virtual switches, VM creation, checkpoints, export and import.',['Included.','Included.','Included.']],
+ ['Storage and file services','disks, Storage Spaces, quotas, DFS',['Disks, volumes, Storage Spaces','Plus quotas, shadow copies','Plus DFS replication, FSRM, deduplication'],
+  'Storage and file service configuration.',
+  ['Disks, volumes, Storage Spaces.','Plus quotas and shadow copies.','Plus DFS replication, FSRM and deduplication.']],
+ ['Windows Server Backup: setup and restore','if configured by us',['–','✓','✓'],
+  'Setup of Windows Server Backup: schedule, target storage. Full restore from it, provided we configured it.',['Not included.','Included.','Included.']],
+ ['SQL Server','Express, Standard',['–','Express, Standard','Plus maintenance plans, tuning'],
+  'Installation and configuration of SQL Server and its backups. Licenses are purchased by the client; databases and queries are not included.',
+  ['Not included.','Installation and configuration of Express or Standard, backups.','Plus maintenance plans and performance tuning.']],
+ ['Group Policy','GPO',['–','Security, RDP, passwords','Plus software deployment, scripts, audit'],
+  'Creating and configuring group policies.',
+  ['Not included.','Security, RDP and password policies.','Plus software deployment, logon scripts and audit policies.']],
+ ['Security hardening','Microsoft Security Baseline',['–','Security Baseline','Security Baseline, report'],
+  'Applying the Microsoft Security Baseline and correcting findings after your approval.',['Not included.','Security Baseline applied.','Security Baseline applied, with a written report.']],
+ ['Windows Server in-place upgrade','',['–','✓','✓'],'In-place upgrade to a newer Windows Server version with a backup and rollback plan.',['Not included.','Included.','Included.']],
+ ['Restore of individual files and folders','from supported backups',['–','–','✓'],
+  'Restoring selected files or folders from INTROSERV Backup or Windows Server Backup where supported.',['Not included.','Not included.','Included.']],
+ ['Test restore','verify that backups work',['–','–','✓'],'A test restore from backup on request, to confirm the backup is usable.',['Not included.','Not included.','Included.']],
+ ['Hyper-V Replica','replication to a second host',['–','–','✓'],'Configuration of VM replication to a second Hyper-V host.',['Not included.','Not included.','Included.']],
+];
+
+function tierCount(r){return r[2].filter(v=>v!=='–').length}
+function build(os){
+  const rows=[...ALLOS,...os,...SEC,...PREM];
+  const g3=rows.filter(r=>tierCount(r)===3), g2=rows.filter(r=>tierCount(r)===2), g1=rows.filter(r=>tierCount(r)===1);
+  return [['Included in all plans',g3],['Advanced and Premium',g2],['Premium only',g1]];
+}
+const ALL={linux:build(LINUX),pve:build(PVE),win:build(WIN)};
+
+function cell(v){
+  if(v==='–') return '<span class="dash">–</span>';
+  return '<span class="ok">✓</span>';
+}
+function head(){return '<thead><tr><th></th>'+T.map(x=>'<th>'+x+'</th>').join('')+'</tr></thead>'}
+function renderParams(){
+  let h='<thead><tr><th class="cardcell"></th>'
+   +'<th class="cardcell"><div class="plan"><div class="name">Starter</div><div class="price">€39</div><div class="per">per server or node / month</div></div></th>'
+   +'<th class="cardcell"><div class="plan featured"><div class="name">Advanced</div><div class="price">€89</div><div class="per">per server or node / month</div></div></th>'
+   +'<th class="cardcell"><div class="plan"><div class="name">Premium</div><div class="price">€110</div><div class="per">per server or node / month</div></div></th></tr></thead><tbody>';
+  PARAMS.forEach(r=>{h+='<tr><td class="label"><div class="lbl"><div><span class="t">'+r[0]+'</span>'+(r[1]?'<span class="s">'+r[1]+'</span>':'')+'</div></div></td>'+r[2].map(v=>'<td class="v">'+v+'</td>').join('')+'</tr>'});
+  document.getElementById('t-params').innerHTML=h+'</tbody>';
+}
+function renderOS(id,key){
+  let h=head()+'<tbody>';
+  ALL[key].forEach(([g,rows],gi)=>{
+    rows.forEach((r,i)=>{
+      h+='<tr><td class="label"><div class="lbl"><button class="info" data-k="'+key+'" data-g="'+gi+'" data-i="'+i+'" aria-label="Details: '+r[0].replace(/"/g,'&quot;')+'">i</button><div><span class="t">'+r[0]+'</span>'+(r[1]?'<span class="s">'+r[1]+'</span>':'')+'</div></div></td>';
+      r[2].forEach(v=>h+='<td class="v">'+cell(v)+'</td>');
+      h+='</tr>';
+    });
+  });
+  document.getElementById(id).innerHTML=h+'</tbody>';
+}
+renderParams();
+renderOS('t-linux','linux'); renderOS('t-pve','pve'); renderOS('t-win','win');
+
+const dlg=document.getElementById('dlg');
+document.addEventListener('click',e=>{
+  const b=e.target.closest('.info'); if(!b) return;
+  const r=ALL[b.dataset.k][+b.dataset.g][1][+b.dataset.i];
+  document.getElementById('dlg-title').textContent=r[0];
+  document.getElementById('dlg-desc').textContent=r[3];
+  document.getElementById('dlg-tiers').innerHTML=T.map((n,i)=>'<div class="tier'+(r[2][i]==='–'?' off':'')+'"><b>'+n+'</b><span>'+r[4][i]+'</span></div>').join('');
+  dlg.showModal();
+});
+document.getElementById('dlg-close').onclick=()=>dlg.close();
+dlg.addEventListener('click',e=>{ if(e.target===dlg) dlg.close(); });
+
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-selected',x===t));
+  document.querySelectorAll('.panel').forEach(p=>p.hidden=p.dataset.os!==t.dataset.os);
+  try{localStorage.setItem('sm-os',t.dataset.os)}catch(_){}
+});
+try{const s=localStorage.getItem('sm-os'); if(s){const b=document.querySelector('.tab[data-os="'+s+'"]'); if(b) b.click();}}catch(_){}
+</script>
+</body>
+</html>
